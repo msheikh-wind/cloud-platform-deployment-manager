@@ -1189,6 +1189,13 @@ func (r *HostReconciler) ReconcileEthernetInterfaces(client *gophercloud.Service
 				updated = true
 			}
 		}
+		if ethInfo.MaxTxRate != nil || ethInfo.MaxRxRate != nil {
+			rateUpdate, err := r.ethRateLimitUpdateRequired(ethInfo, profile, host, instance, client)
+			if err != nil {
+				return err
+			}
+			updated = rateUpdate
+		}
 
 		result, err := r.ReconcileInterfaceNetworks(client, instance, ethInfo.CommonInterfaceInfo, *iface, host)
 		if err != nil {
@@ -1266,6 +1273,88 @@ func (r *HostReconciler) ReconcileEthernetInterfaces(client *gophercloud.Service
 	return nil
 }
 
+func (r *HostReconciler) ethRateLimitUpdateRequired(ethInfo starlingxv1.EthernetInfo, profile *starlingxv1.HostProfileSpec, host *v1info.HostInfo, instance *starlingxv1.Host, client *gophercloud.ServiceClient) (bool, error) {
+	var ifuuid string
+
+	if ethInfo.CommonInterfaceInfo.Class == interfaces.IFClassPlatform {
+		iface, _ := host.FindInterfaceByName(ethInfo.Name)
+		if iface.Class == interfaces.IFClassPlatform && iface.Type == interfaces.IFTypeEthernet {
+			ifuuid = iface.ID
+
+			// Update the interface
+			opts := commonInterfaceOptions(ethInfo.CommonInterfaceInfo, profile, host)
+			var needsUpdate bool
+
+			if ethInfo.MaxTxRate != nil {
+				opts.MaxTxRate = ethInfo.MaxTxRate
+				needsUpdate = true
+			}
+			if ethInfo.MaxRxRate != nil {
+				opts.MaxRxRate = ethInfo.MaxRxRate
+				needsUpdate = true
+			}
+
+			if !needsUpdate {
+				return false, nil
+			}
+			logHost.Info("updating ethernet interface for rate limit", "opts", opts)
+
+			_, err := interfaces.Update(client, ifuuid, opts).Extract()
+			if err != nil {
+				err = perrors.Wrapf(err, "failed to update interface: %s, %s",
+					ifuuid, common.FormatStruct(opts))
+				return false, err
+			}
+
+			r.NormalEvent(instance, common.ResourceUpdated,
+				"ethernet interface %q has been updated", ethInfo.Name)
+		}
+	}
+
+	return true, nil
+}
+
+func (r *HostReconciler) vlanRateLimitUpdateRequired(vlanInfo starlingxv1.VLANInfo, profile *starlingxv1.HostProfileSpec, host *v1info.HostInfo, instance *starlingxv1.Host, client *gophercloud.ServiceClient) (bool, error) {
+	var ifuuid string
+
+	if vlanInfo.CommonInterfaceInfo.Class == interfaces.IFClassPlatform {
+		iface, _ := host.FindInterfaceByName(vlanInfo.Name)
+		if iface.Class == interfaces.IFClassPlatform && iface.Type == interfaces.IFTypeEthernet {
+			ifuuid = iface.ID
+
+			// Update the interface
+			opts := commonInterfaceOptions(vlanInfo.CommonInterfaceInfo, profile, host)
+			var needsUpdate bool
+
+			if vlanInfo.MaxTxRate != nil {
+				opts.MaxTxRate = vlanInfo.MaxTxRate
+				needsUpdate = true
+			}
+			if vlanInfo.MaxRxRate != nil {
+				opts.MaxRxRate = vlanInfo.MaxRxRate
+				needsUpdate = true
+			}
+
+			if !needsUpdate {
+				return false, nil
+			}
+			logHost.Info("updating vlan interface for rate limiting", "opts", opts)
+
+			_, err := interfaces.Update(client, ifuuid, opts).Extract()
+			if err != nil {
+				err = perrors.Wrapf(err, "failed to update interface: %s, %s",
+					ifuuid, common.FormatStruct(opts))
+				return false, err
+			}
+
+			r.NormalEvent(instance, common.ResourceUpdated,
+				"vlan interface %q has been updated", vlanInfo.Name)
+		}
+	}
+
+	return true, nil
+}
+
 // bondUpdateRequired is a utility function which determines whether the
 // bond specificc interface attributes have changed and if so fills in the opts
 // struct with the values that must be passed to the system API.
@@ -1303,7 +1392,19 @@ func bondUpdateRequired(bond starlingxv1.BondInfo, iface *interfaces.Interface, 
 		opts.UsesModify = &bond.Members
 		result = true
 	}
-
+	if bond.CommonInterfaceInfo.Class == interfaces.IFClassPlatform {
+		iface, _ := host.FindInterfaceByName(bond.Name)
+		if iface.Class == interfaces.IFClassPlatform && iface.Type == interfaces.IFTypeEthernet {
+			if bond.MaxTxRate != nil {
+				opts.MaxTxRate = bond.MaxTxRate
+				result = true
+			}
+			if bond.MaxRxRate != nil {
+				opts.MaxRxRate = bond.MaxRxRate
+				result = true
+			}
+		}
+	}
 	return opts, result
 }
 
@@ -1505,6 +1606,14 @@ func (r *HostReconciler) ReconcileVLANInterfaces(client *gophercloud.ServiceClie
 
 				updated = true
 			}
+		}
+
+		if vlanInfo.MaxTxRate != nil || vlanInfo.MaxRxRate != nil {
+			rateUpdate, err := r.vlanRateLimitUpdateRequired(vlanInfo, profile, host, instance, client)
+			if err != nil {
+				return err
+			}
+			updated = rateUpdate
 		}
 
 		networksUpdated, err := r.ReconcileInterfaceNetworks(client, instance, vlanInfo.CommonInterfaceInfo, *iface, host)

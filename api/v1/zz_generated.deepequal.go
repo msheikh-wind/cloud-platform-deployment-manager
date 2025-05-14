@@ -319,6 +319,22 @@ func (in *BondInfo) DeepEqual(other *BondInfo) bool {
 		}
 	}
 
+	if (in.MaxTxRate == nil) != (other.MaxTxRate == nil) {
+		return false
+	} else if in.MaxTxRate != nil {
+		if *in.MaxTxRate != *other.MaxTxRate {
+			return false
+		}
+	}
+
+	if (in.MaxRxRate == nil) != (other.MaxRxRate == nil) {
+		return false
+	} else if in.MaxRxRate != nil {
+		if *in.MaxRxRate != *other.MaxRxRate {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -705,6 +721,25 @@ func (in *EthernetInfo) DeepEqual(other *EthernetInfo) bool {
 
 	if in.Lower != other.Lower {
 		return false
+	}
+	if in.MaxTxRate != nil {
+		if (in.MaxTxRate == nil) != (other.MaxTxRate == nil) {
+			return false
+		} else if in.MaxTxRate != nil {
+			if *in.MaxTxRate != *other.MaxTxRate {
+				return false
+			}
+		}
+	}
+
+	if in.MaxRxRate != nil {
+		if (in.MaxRxRate == nil) != (other.MaxRxRate == nil) {
+			return false
+		} else if in.MaxRxRate != nil {
+			if *in.MaxRxRate != *other.MaxRxRate {
+				return false
+			}
+		}
 	}
 
 	return true
@@ -2807,6 +2842,21 @@ func (in *VLANInfo) DeepEqual(other *VLANInfo) bool {
 	}
 	if in.VID != other.VID {
 		return false
+	}
+	if (in.MaxTxRate == nil) != (other.MaxTxRate == nil) {
+		return false
+	} else if in.MaxTxRate != nil {
+		if *in.MaxTxRate != *other.MaxTxRate {
+			return false
+		}
+	}
+
+	if (in.MaxRxRate == nil) != (other.MaxRxRate == nil) {
+		return false
+	} else if in.MaxRxRate != nil {
+		if *in.MaxRxRate != *other.MaxRxRate {
+			return false
+		}
 	}
 
 	return true

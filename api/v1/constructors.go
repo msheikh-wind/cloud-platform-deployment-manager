@@ -361,8 +361,10 @@ func parseInterfaceInfo(profile *HostProfileSpec, host v1info.HostInfo) error {
 			var ethernet EthernetInfo
 			if len(iface.Uses) > 0 {
 				ethernet = EthernetInfo{
-					Lower: iface.Uses[0],
-					Port:  EthernetPortInfo{Name: "dummy"}}
+					Lower:     iface.Uses[0],
+					Port:      EthernetPortInfo{Name: "dummy"},
+					MaxTxRate: iface.MaxTxRate,
+					MaxRxRate: iface.MaxRxRate}
 			} else {
 				portname, found := host.FindInterfacePortName(iface.ID)
 				if !found {
@@ -385,8 +387,10 @@ func parseInterfaceInfo(profile *HostProfileSpec, host v1info.HostInfo) error {
 
 		case interfaces.IFTypeVLAN:
 			vlan := VLANInfo{
-				VID:   *iface.VID,
-				Lower: iface.Uses[0]}
+				VID:       *iface.VID,
+				Lower:     iface.Uses[0],
+				MaxTxRate: iface.MaxTxRate,
+				MaxRxRate: iface.MaxRxRate}
 			vlan.CommonInterfaceInfo = data
 			vlans = append(vlans, vlan)
 
@@ -395,7 +399,9 @@ func parseInterfaceInfo(profile *HostProfileSpec, host v1info.HostInfo) error {
 				Mode:               *iface.AEMode,
 				TransmitHashPolicy: iface.AETransmitHash,
 				PrimaryReselect:    iface.AEPrimReselect,
-				Members:            iface.Uses}
+				Members:            iface.Uses,
+				MaxTxRate:          iface.MaxTxRate,
+				MaxRxRate:          iface.MaxRxRate}
 			bond.CommonInterfaceInfo = data
 			bonds = append(bonds, bond)
 

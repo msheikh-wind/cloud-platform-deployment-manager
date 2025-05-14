@@ -471,6 +471,16 @@ type EthernetInfo struct {
 	// configured.
 	// +kubebuilder:validation:Pattern=^[a-zA-Z0-9\-_\.]+$
 	Lower string `json:"lower,omitempty"`
+
+	// MaxTxRate defines the maximum tx rate of ethernet interfaces
+	// for rate limiting. Only applicable if the interface class
+	// is set to "platform" and interface type is set to "ethernet".
+	MaxTxRate *int `json:"maxTxRate,omitempty"`
+
+	// MaxRxRate defines the maximum rx rate of ethernet interfaces
+	// for rate limiting. Only applicable if the interface class
+	// is set to "platform" and interface type is set to "ethernet".
+	MaxRxRate *int `json:"maxRxRate,omitempty"`
 }
 
 // EthernetList defines a type to represent a slice of ethernet interfaces.
@@ -493,6 +503,16 @@ type VLANInfo struct {
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:validation:Maximum=4095
 	VID int `json:"vid"`
+
+	// MaxTxRate defines the maximum tx rate of vlan interfaces
+	// for rate limiting. Only applicable if the interface class
+	// is set to "platform" and interface type is set to "vlan".
+	MaxTxRate *int `json:"maxTxRate,omitempty"`
+
+	// MaxRxRate defines the maximum rx rate of vlan interfaces
+	// for rate limiting. Only applicable if the interface class
+	// is set to "platform" and interface type is set to "vlan".
+	MaxRxRate *int `json:"maxRxRate,omitempty"`
 }
 
 // VLANList defines a type to represent a slice of VLAN interfaces.
@@ -525,6 +545,16 @@ type BondInfo struct {
 	// +kubebuilder:valiation:Enum=always,better,failure
 	// +optional
 	PrimaryReselect *string `json:"primaryReselect,omitempty"`
+
+	// MaxTxRate defines the maximum tx rate of bond interfaces
+	// for rate limiting. Only applicable if the interface class
+	// is set to "platform" and interface type is set to "ae".
+	MaxTxRate *int `json:"maxTxRate,omitempty"`
+
+	// MaxRxRate defines the maximum rx rate of bond interfaces
+	// for rate limiting. Only applicable if the interface class
+	// is set to "platform" and interface type is set to "ae".
+	MaxRxRate *int `json:"maxRxRate,omitempty"`
 }
 
 // BondList defines a type to represent a slice of Bond interfaces.
