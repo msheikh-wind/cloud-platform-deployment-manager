@@ -361,8 +361,9 @@ func parseInterfaceInfo(profile *HostProfileSpec, host v1info.HostInfo) error {
 			var ethernet EthernetInfo
 			if len(iface.Uses) > 0 {
 				ethernet = EthernetInfo{
-					Lower: iface.Uses[0],
-					Port:  EthernetPortInfo{Name: "dummy"}}
+					Lower:     iface.Uses[0],
+					Port:      EthernetPortInfo{Name: "dummy"},
+					MaxTxRate: iface.MaxTxRate}
 			} else {
 				portname, found := host.FindInterfacePortName(iface.ID)
 				if !found {

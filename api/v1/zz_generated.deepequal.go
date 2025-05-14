@@ -706,6 +706,15 @@ func (in *EthernetInfo) DeepEqual(other *EthernetInfo) bool {
 	if in.Lower != other.Lower {
 		return false
 	}
+	if in.MaxTxRate != nil {
+		if (in.MaxTxRate == nil) != (other.MaxTxRate == nil) {
+			return false
+		} else if in.MaxTxRate != nil {
+			if *in.MaxTxRate != *other.MaxTxRate {
+				return false
+			}
+		}
+	}
 
 	return true
 }

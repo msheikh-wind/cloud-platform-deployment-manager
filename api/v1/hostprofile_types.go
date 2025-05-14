@@ -471,6 +471,9 @@ type EthernetInfo struct {
 	// configured.
 	// +kubebuilder:validation:Pattern=^[a-zA-Z0-9\-_\.]+$
 	Lower string `json:"lower,omitempty"`
+
+	// MaxTxRate for rate limiting the ethernet interface.
+	MaxTxRate *int `json:"maxTxRate,omitempty"`
 }
 
 // EthernetList defines a type to represent a slice of ethernet interfaces.

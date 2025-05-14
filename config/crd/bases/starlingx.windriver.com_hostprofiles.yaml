@@ -407,6 +407,9 @@ spec:
                             configured.
                           pattern: ^[a-zA-Z0-9\-_\.]+$
                           type: string
+                        maxTxRate:
+                          description: MaxTxRate for rate limiting the ethernet interface.
+                          type: integer
                         mtu:
                           description: MTU defines the maximum transmit unit for this
                             interface.

@@ -1190,6 +1190,34 @@ func (r *HostReconciler) ReconcileEthernetInterfaces(client *gophercloud.Service
 			}
 		}
 
+		if ethInfo.MaxTxRate != nil {
+
+			if ethInfo.CommonInterfaceInfo.Class == interfaces.IFClassPlatform {
+				iface, _ = host.FindInterfaceByName(ethInfo.Name)
+				if iface.Class == interfaces.IFClassPlatform && iface.Type == interfaces.IFTypeEthernet {
+					ifuuid = iface.ID
+
+					// Update the interface
+					opts := commonInterfaceOptions(ethInfo.CommonInterfaceInfo, profile, host)
+					opts.MaxTxRate = ethInfo.MaxTxRate
+
+					logHost.Info("updating ethernet interface with MaxTxRate", "opts", opts)
+
+					_, err := interfaces.Update(client, ifuuid, opts).Extract()
+					if err != nil {
+						err = perrors.Wrapf(err, "failed to update interface: %s, %s",
+							ifuuid, common.FormatStruct(opts))
+						return err
+					}
+
+					r.NormalEvent(instance, common.ResourceUpdated,
+						"ethernet interface %q has been updated with MaxTxRate", ethInfo.Name)
+
+					updated = true
+				}
+			}
+		}
+
 		result, err := r.ReconcileInterfaceNetworks(client, instance, ethInfo.CommonInterfaceInfo, *iface, host)
 		if err != nil {
 			return err
